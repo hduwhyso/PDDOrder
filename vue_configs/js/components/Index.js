@@ -1,7 +1,7 @@
 /*
  * @Author: hduwhyso 389665028@qq.com
  * @Date: 2024-07-14 07:28:06
- * @LastEditTime: 2024-08-10 11:15:55
+ * @LastEditTime: 2025-07-03 22:19:33
  * @Description: 
  */
 let Index = {
@@ -45,10 +45,10 @@ let Index = {
         //   title: '新村助力设置',
         //   link: '/village/share'
         // },
-        // {
-        //   title: '关于项目',
-        //   link: '/about'
-        // },
+        {
+          title: '关于项目',
+          link: '/about'
+        },
         // {
         //   title: '常见问题',
         //   link: '/QA'

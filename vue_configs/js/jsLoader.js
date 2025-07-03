@@ -1,7 +1,7 @@
 /*
  * @Author: hduwhyso 389665028@qq.com
  * @Date: 2024-07-14 07:28:06
- * @LastEditTime: 2024-08-10 11:15:51
+ * @LastEditTime: 2025-07-03 22:21:53
  * @Description: 
  */
 /**
@@ -11,15 +11,16 @@ const loadJsList = [
   'https://fastly.jsdelivr.net/npm/axios@0.25.0/dist/axios.min.js',
   'https://fastly.jsdelivr.net/npm/js-base64@3.7.2/base64.min.js',
   './js/mdjs.min.js',
-  './js/components/Index.js',
+  './js/components/configuration/About.js',
+  // './js/components/configuration/QuestionAnswer.js',
   './js/components/configuration/ScriptConfig.js',
   './js/components/configuration/PayWayConfig.js',
   './js/components/configuration/ChannelConfig.js',
   './js/components/configuration/OrderMap.js',
   './js/components/configuration/BankCardList.js',
+  './js/components/Index.js',
   // './js/components/configuration/DevelopConfig.js',
   // './js/components/configuration/CommonConfigs.js',
-  // './js/components/configuration/QuestionAnswer.js',
   // './js/components/configuration/AccountManage.js',
 ]
 

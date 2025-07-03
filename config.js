@@ -1,7 +1,7 @@
 /*
  * @Author: hduwhyso 389665028@qq.com
  * @Date: 2024-06-08 10:56:10
- * @LastEditTime: 2025-07-03 19:57:50
+ * @LastEditTime: 2025-07-03 22:57:53
  * @Description:
  */
 /*
@@ -263,13 +263,14 @@ try {
     warn_skipped_too_much: false,
     auto_check_update: false,    
     github_url: "https://github.com/hduwhyso/PDDOrder/tree/master",
+  gitee_url: 'https://gitee.com/TonyJiangWJ/Ant-Forest',
     // github release url 用于检测更新状态
     github_latest_url: "https://api.github.com/repos/hduwhyso/PDDOrder/releases/latest",
     history_tag_url: "https://api.github.com/repos/hduwhyso/PDDOrder/tags",
   gitee_relase_url: 'https://gitee.com/api/v5/repos/TonyJiangWJ/Ant-Forest/releases/latest',
   gitee_package_prefix: 'Ant-Forest-',
   gitee_package_url: 'https://gitee.com/TonyJiangWJ/Ant-Forest/raw/release_pkgs/',
-    release_access_token: "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",
+    release_access_token: "",
     
   // 代码版本
   code_version: 'v1.4.0',
