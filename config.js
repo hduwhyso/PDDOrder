@@ -1,7 +1,7 @@
 /*
  * @Author: hduwhyso 389665028@qq.com
  * @Date: 2024-06-08 10:56:10
- * @LastEditTime: 2025-02-12 16:53:02
+ * @LastEditTime: 2025-07-03 16:01:51
  * @Description:
  */
 /*
@@ -262,9 +262,9 @@ try {
     warn_skipped_ignore_package: false,
     warn_skipped_too_much: false,
     auto_check_update: false,
-    github_url: "https://github.com/TonyJiangWJ/AutoScriptBase",
+    github_url: "https://github.com/hduwhyso/PDDOrder/tree/master",
     // github release url 用于检测更新状态
-    github_latest_url: "",
+    github_latest_url: "https://github.com/hduwhyso/PDDOrder.git",
     // 延迟启动时延 5秒 悬浮窗中进行的倒计时时间
     delayStartTime: 5,
     // 本地ocr优先级
