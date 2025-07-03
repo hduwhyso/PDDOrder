@@ -1,7 +1,7 @@
 /*
  * @Author: hduwhyso 389665028@qq.com
  * @Date: 2024-06-08 10:56:10
- * @LastEditTime: 2025-07-03 16:01:51
+ * @LastEditTime: 2025-07-03 19:56:10
  * @Description:
  */
 /*
@@ -266,7 +266,7 @@ try {
     // github release url 用于检测更新状态
     github_latest_url: "https://api.github.com/repos/hduwhyso/PDDOrder/releases/latest",
     history_tag_url: "https://api.github.com/repos/hduwhyso/PDDOrder/tags",
-    release_access_token: "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",
+    release_access_token: "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",
     // 延迟启动时延 5秒 悬浮窗中进行的倒计时时间
     delayStartTime: 5,
     // 本地ocr优先级
