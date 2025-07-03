@@ -1,7 +1,7 @@
 /*
  * @Author: hduwhyso 389665028@qq.com
  * @Date: 2024-06-08 10:56:10
- * @LastEditTime: 2025-07-03 22:57:53
+ * @LastEditTime: 2025-07-04 06:57:02
  * @Description:
  */
 /*
@@ -16,6 +16,7 @@ let currentEngine = engines.myEngine().getSource() + "";
 let isRunningMode = currentEngine.endsWith("/config.js") && typeof module === "undefined";
 let is_pro = !!Object.prototype.toString.call(com.stardust.autojs.core.timing.TimedTask.Companion).match(/Java(Class|Object)/);
 try {
+  /**初始设置，本地有存储后以本地为准 */
   let default_config = {
     //脚本设置
     isDualOpen: false, //手机单开还是双开拼多多APP
@@ -23,7 +24,10 @@ try {
     autoSubmit: true, //自动交单
     apiOrder: true, //api接单
     useBenefitsFirst: false, //支付宝自动识别优惠
-    limitOrders: [{ upperLimitOrders: 18, perDays: 1 },{ upperLimitOrders: 40, perDays: 7 }], //每天每个账号限制单量
+    limitOrders: [
+      { upperLimitOrders: 18, perDays: 1 },
+      { upperLimitOrders: 40, perDays: 7 },
+    ], //每天每个账号限制单量
     ocr: "MlkitOcr" /**PaddleOcr  MlkitOcr */,
     dict: null, //字典
     vender_id: 1024,
@@ -131,56 +135,9 @@ try {
       },
     },
     //付款相关
-    bankCardList: [
-      { cardNO: "3511", password: "140989", cardType: "信用卡", bankName: "工商银行", owner: "chase", dailyLimit: 0 },
-      { cardNO: "8812", password: "140989", cardType: "信用卡", bankName: "中国银行", owner: "chase", dailyLimit: 0 },
-      { cardNO: "0796", password: "140989", cardType: "信用卡", bankName: "邮储银行", owner: "chase", dailyLimit: 30 },
-      { cardNO: "5389", password: "140989", cardType: "信用卡", bankName: "招商银行", owner: "chase", dailyLimit: 20 },
-      { cardNO: "8683", password: "140989", cardType: "信用卡", bankName: "交通银行", owner: "chase", dailyLimit: 0 },
-      { cardNO: "2903", password: "140989", cardType: "信用卡", bankName: "交通银行", owner: "chase", dailyLimit: 0 },
-      { cardNO: "6032", password: "140989", cardType: "信用卡", bankName: "交通银行", owner: "chase", dailyLimit: 0 },
-      { cardNO: "6613", password: "140989", cardType: "信用卡", bankName: "交通银行", owner: "chase", dailyLimit: 0 },
-      { cardNO: "4539", password: "140989", cardType: "信用卡", bankName: "农业银行", owner: "chase", dailyLimit: 0 },
-      { cardNO: "5317", password: "140989", cardType: "信用卡", bankName: "农业银行", owner: "guang", dailyLimit: 0 },
-      { cardNO: "6658", password: "140989", cardType: "信用卡", bankName: "广发银行", owner: "chase", dailyLimit: 100 },
-      { cardNO: "2537", password: "140989", cardType: "信用卡", bankName: "广发银行", owner: "chase", dailyLimit: 100 },
-      { cardNO: "6193", password: "140989", cardType: "信用卡", bankName: "广发银行", owner: "chase", dailyLimit: 100 },
-      { cardNO: "4124", password: "140989", cardType: "信用卡", bankName: "工商银行", owner: "li", dailyLimit: 0 },
-      { cardNO: "0785", password: "140989", cardType: "信用卡", bankName: "工商银行", owner: "li", dailyLimit: 0 },
-      { cardNO: "2625", password: "140989", cardType: "信用卡", bankName: "工商银行", owner: "li", dailyLimit: 0 },
-      { cardNO: "2132", password: "140989", cardType: "信用卡", bankName: "农业银行", owner: "li", dailyLimit: 0 },
-    ],
+    bankCardList: [],
     /**充值平台账号 */
-    platformRechargeList: [
-      { channelName: "微信支付", nickName: "hduwhyso", channelID: "13819984443", owner: "chase" },
-      { channelName: "微信支付", nickName: "chase", channelID: "17328646038", owner: "chase" },
-      { channelName: "微信支付", nickName: "bird", channelID: "13958445034", owner: "chase" },
-      { channelName: "微信支付", nickName: "code", channelID: "17116467837", owner: "chase" },
-      { channelName: "微信支付", nickName: "chaseWhyso", channelID: "15360423179", owner: "chase" },
-      { channelName: "微信支付", nickName: "whysoChase", channelID: "19310192851", owner: "guang" },
-      { channelName: "微信支付", nickName: "guang", channelID: "17374181073", owner: "guang" },
-      { channelName: "微信支付", nickName: "chase_code", channelID: "13345795039", owner: "li" },
-      { channelName: "微信支付", nickName: "god", channelID: "17374181103", owner: "li" },
-      { channelName: "多多支付", nickName: "13819984443", channelID: "13819984443", owner: "chase" },
-      { channelName: "多多支付", nickName: "19310192851", channelID: "19310192851", owner: "chase" },
-      { channelName: "QQ钱包", nickName: "chase", channelID: "389665028", owner: "chase" },
-      { channelName: "QQ钱包", nickName: "幻空", channelID: "55140391", owner: "chase" },
-      { channelName: "QQ钱包", nickName: "火狐狸", channelID: "249551678", owner: "chase" },
-      { channelName: "QQ钱包", nickName: "﹌　　 倒霉蛋", channelID: "570247918", owner: "chase" },
-      { channelName: "QQ钱包", nickName: "小豆小豆，奥特曼来啦", channelID: "529846462", owner: "chase" },
-      { channelName: "QQ钱包", nickName: "Xu丶低調の", channelID: "577057944", owner: "chase" },
-      { channelName: "QQ钱包", nickName: "雅蠛蝶丶突击队", channelID: "597264898", owner: "li" },
-      { channelName: "QQ钱包", nickName: "mu", channelID: "860320003", owner: "li" },
-      { channelName: "QQ钱包", nickName: "NYCYBP", channelID: "807310668", owner: "li" },
-      { channelName: "支付宝", nickName: "13819984443", channelID: "13819984443", owner: "chase" },
-      { channelName: "支付宝", nickName: "19310192851", channelID: "19310192851", owner: "chase" },
-      { channelName: "支付宝", nickName: "17374181103", channelID: "17374181103", owner: "chase" },
-      { channelName: "支付宝", nickName: "17328646038", channelID: "17328646038", owner: "chase" },
-      { channelName: "支付宝", nickName: "17374181073", channelID: "17374181073", owner: "guang" },
-      { channelName: "云闪付", nickName: "13819984443", channelID: "13819984443", owner: "chase" },
-      { channelName: "云闪付", nickName: "13777533321", channelID: "13777533321", owner: "li" },
-      { channelName: "云闪付", nickName: "17374181073", channelID: "17374181073", owner: "guang" },
-    ],
+    platformRechargeList: [],
     payList: [],
     enablePayList: [],
     active: "01",
@@ -261,19 +218,10 @@ try {
     skip_running_packages: [],
     warn_skipped_ignore_package: false,
     warn_skipped_too_much: false,
-    auto_check_update: false,    
-    github_url: "https://github.com/hduwhyso/PDDOrder/tree/master",
-  gitee_url: 'https://gitee.com/TonyJiangWJ/Ant-Forest',
-    // github release url 用于检测更新状态
-    github_latest_url: "https://api.github.com/repos/hduwhyso/PDDOrder/releases/latest",
-    history_tag_url: "https://api.github.com/repos/hduwhyso/PDDOrder/tags",
-  gitee_relase_url: 'https://gitee.com/api/v5/repos/TonyJiangWJ/Ant-Forest/releases/latest',
-  gitee_package_prefix: 'Ant-Forest-',
-  gitee_package_url: 'https://gitee.com/TonyJiangWJ/Ant-Forest/raw/release_pkgs/',
-    release_access_token: "",
-    
-  // 代码版本
-  code_version: 'v1.4.0',
+    auto_check_update: false,
+
+    // 代码版本
+    code_version: "v1.4.0",
     // 延迟启动时延 5秒 悬浮窗中进行的倒计时时间
     delayStartTime: 5,
     // 本地ocr优先级
@@ -282,7 +230,7 @@ try {
     device_height: device.height,
     sdkInt: device.sdkInt,
     root: files.exists("/sbin/su") || files.exists("/system/xbin/su") || files.exists("/system/bin/su"),
-    shizuku: $shizuku&&$shizuku.isRunning(),
+    shizuku: $shizuku && $shizuku.isRunning(),
     mjwInstalled: shell(" pm list packages", true).result.includes("com.yztc.studio.plugin"),
     // 是否是AutoJS Pro  需要屏蔽部分功能，暂时无法实现：生命周期监听等 包括通话监听
     is_pro: is_pro,
@@ -300,6 +248,18 @@ try {
     // 配置界面webview打印日志
     webview_loging: false,
   };
+
+  let force_config = {
+    github_url: "https://github.com/hduwhyso/PDDOrder/tree/master",
+    gitee_url: "https://gitee.com/TonyJiangWJ/Ant-Forest",
+    // github release url 用于检测更新状态
+    github_latest_url: "https://api.github.com/repos/hduwhyso/PDDOrder/releases/latest",
+    history_tag_url: "https://api.github.com/repos/hduwhyso/PDDOrder/tags",
+    gitee_relase_url: "https://gitee.com/api/v5/repos/TonyJiangWJ/Ant-Forest/releases/latest",
+    gitee_package_prefix: "Ant-Forest-",
+    gitee_package_url: "https://gitee.com/TonyJiangWJ/Ant-Forest/raw/release_pkgs/",
+    release_access_token: "",
+  };
   // 不同项目需要设置不同的storageName，不然会导致配置信息混乱
   let CONFIG_STORAGE_NAME = "beeCloud";
   let PROJECT_NAME = "1_JD";
@@ -309,6 +269,9 @@ try {
   let AesUtil = require("./lib/AesUtil.js");
   let aesKey = device.getAndroidId();
   Object.keys(default_config).forEach(key => {
+  if (typeof force_config[key] !== "undefined") {
+    config[key] = force_config[key];
+  } else {
     let storedVal = storageConfig.get(key);
     if (typeof storedVal !== "undefined") {
       if (securityFields.indexOf(key) > -1) {
@@ -318,7 +281,8 @@ try {
     } else {
       config[key] = default_config[key];
     }
-  });
+  }
+});
 
   // 覆写配置信息
   config.overwrite = (key, value) => {
