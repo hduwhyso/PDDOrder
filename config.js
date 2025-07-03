@@ -261,10 +261,12 @@ try {
     skip_running_packages: [],
     warn_skipped_ignore_package: false,
     warn_skipped_too_much: false,
-    auto_check_update: false,
+    auto_check_update: false,    
     github_url: "https://github.com/hduwhyso/PDDOrder/tree/master",
     // github release url 用于检测更新状态
-    github_latest_url: "https://github.com/hduwhyso/PDDOrder.git",
+    github_latest_url: "https://api.github.com/repos/hduwhyso/PDDOrder/releases/latest",
+    history_tag_url: "https://api.github.com/repos/hduwhyso/PDDOrder/tags",
+    release_access_token: "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",
     // 延迟启动时延 5秒 悬浮窗中进行的倒计时时间
     delayStartTime: 5,
     // 本地ocr优先级
