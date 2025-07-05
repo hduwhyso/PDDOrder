@@ -21,8 +21,6 @@ try {
     //脚本设置
     isDualOpen: false, //手机单开还是双开拼多多APP
     loopPay: true, //循环支付
-    autoSubmit: true, //自动交单
-    apiOrder: true, //api接单
     useBenefitsFirst: false, //支付宝自动识别优惠
     limitOrders: [
       { upperLimitOrders: 18, perDays: 1 },

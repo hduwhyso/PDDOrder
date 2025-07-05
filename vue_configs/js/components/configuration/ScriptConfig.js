@@ -1,7 +1,7 @@
 /*
  * @Author: hduwhyso 389665028@qq.com
  * @Date: 2024-07-20 19:01:24
- * @LastEditTime: 2025-02-12 17:24:30
+ * @LastEditTime: 2025-07-05 14:21:40
  * @Description:
  */
 
@@ -13,8 +13,6 @@
        configs: {
         isDualOpen: false, //手机单开还是双开拼多多APP
          loopPay: true,
-         autoSubmit: true,
-         apiOrder: true,
          useBenefitsFirst: false, //支付宝自动识别优惠
          limitOrders: [{ upperLimitOrders: 18, perDays: 1 },{ upperLimitOrders: 40, perDays: 7 }], //每天每个账号限制单量
          ocr: "MlkitOcr" /**PaddleOcr  MlkitOcr */,
@@ -29,12 +27,6 @@
     </van-cell>
     <van-cell title="循环支付">
       <van-switch v-model="configs.loopPay" size="1rem" />
-    </van-cell>
-    <van-cell title="自动提交">
-      <van-switch v-model="configs.autoSubmit" size="1rem" />
-    </van-cell>
-    <van-cell title="API做单">
-      <van-switch v-model="configs.apiOrder" size="1rem" />
     </van-cell>
     <van-cell title="支付宝自动识别优惠">
       <van-switch v-model="configs.useBenefitsFirst" size="1rem" />

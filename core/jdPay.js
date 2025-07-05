@@ -1,6 +1,3 @@
-
-let {reportSuccess,reportRefund,reportInProgress} = require('./submit.js')
-
 let {apiReportSuccess,apiReportRefund,apiReporInProgress, phoneNumber}= require('./APISubmit.js')
 let {openOrderDetail,enterJDOrderlist,GetAndCheckOrderNumber,payWay,enterRechargelist}=SingleRequire('JD')
 let pay_QQ = SingleRequire("Pay_QQ");
@@ -398,22 +395,14 @@ function Pay() {
         try {
             infoFloaty.setProcessText("开始报单")
             let submitResult=null
-            log('confirmOrderStatus',Boolean(currentOrder),autoSubmit)
-            if (currentOrder && autoSubmit) {
+            log('confirmOrderStatus',Boolean(currentOrder))
+            if (currentOrder) {
                 if ((textExists('充值成功') ||textExists('已完成')) && (textExists('归属地区') || textExists('话费充值订单'))) {
                     logs("开始上报充值成功的订单")
-                    if(apiOrder){
                         submitResult= apiReportSuccess(); // 上报充值成功的订单
-                    }else{
-                        submitResult= reportSuccess(); // 上报充值成功的订单
-                    }
                 } else if ((textExists('退款中')||textExists('已退款')) && (textExists('归属地区') || textExists('话费充值订单'))) {
                     logs("开始上报退款的订单")
-                    if(apiOrder){
                         submitResult= apiReportRefund(); // 上报退款中的订单
-                    }else{
-                        submitResult= reportRefund(); // 上报退款中的订单
-                    }
                 }  else if (textExists('正在充值') && (textExists('归属地区') || textExists('话费充值订单'))) {
                     logs("开始上报等待到账的订单")
                     this.afterPay();

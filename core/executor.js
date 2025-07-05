@@ -1,13 +1,13 @@
 /*
  * @Author: hduwhyso 389665028@qq.com
  * @Date: 2024-06-09 11:09:54
- * @LastEditTime: 2025-02-14 23:49:19
+ * @LastEditTime: 2025-07-05 15:35:34
  * @Description:
  *
 TODO：如果自己账号下面存在其他渠道订单，脚本会充错渠道
 
  */
-var { config:{root,shizuku,vender,vender_id,apiOrder,orderMap,currentOrder,platform,limitOrders,enablePayList,loopPay,isDualOpen,autoSubmit,ocr,useBenefitsFirst,sdkInt,mjwInstalled},config, } = require('../config')(runtime, this)
+var { config:{root,shizuku,vender,vender_id,orderMap,currentOrder,platform,limitOrders,enablePayList,loopPay,isDualOpen,ocr,useBenefitsFirst,sdkInt,mjwInstalled},config, } = require('../config')(runtime, this)
 // 创建本地存储
 orderMap = new Map(Object.entries(orderMap || {}));
 var platformArr = Object.values(config.platform).map(platform => platform.name);// [ '京东', '拼多多', '淘宝' ]
@@ -33,8 +33,6 @@ var currentOrderCURD = SingleRequire('CURD');
 let { sortBy,mapToObj,shellOrShizuku,alertWithMusic,ordersCountInHours,currentMonthOrdersCount,ignoreBatteryOptimization,textExists,searchDict,clickTextR} = SingleRequire('Common');
 let pddProcess = require('./PDD_Process.js');
 let unionPayProcess = require('./unionPayProcess.js')
-let alipayRechargeProcess = require('./alipayRechargeProcess.js')
-let taobaoProcess = require('./taobaoProcess.js')
 let placeOrder = require('./placeOrder.js');
 let jdPay = require('./jdPay.js');
 
@@ -165,12 +163,7 @@ function OrderHandler() {
               if(chosenPlatform=='pdd' && osIngore)openRechargeCenter();
                 if(this.checkOrder()){
                     let res=""
-                    if(apiOrder){
                         res = require('./waitOrderAPI.js').exec(); // 等单
-
-                    }else{
-                        res = require('./waitOrder.js')(orderMap).exec(); // 等单config['currentOrder']
-                    }
                     if (res && res['MFOrderNumber'] && !res['isSuccessful']) {
                         currentOrder=res
                     } else {
@@ -197,12 +190,6 @@ function OrderHandler() {
                         break;
                     case "unionPay":
                         this.unionPayOrderProcess();
-                        break;
-                    case "taobao":
-                        this.taobaoOrderProcess();
-                        break;
-                    case "alipay":
-                        this.alipayProcess();
                         break;
                     default:
                         break;
@@ -281,8 +268,6 @@ function OrderHandler() {
           break;
         case "jd":
         case "unionPay":
-        case "taobao":
-        case "alipay":
         default:
           appID = currentPlatform["dualLaunchEntry"].find(item => item.value === currentPlatform["entryNow"]);
           appID = appID.id;
@@ -458,20 +443,6 @@ function OrderHandler() {
         unionPayProcess.exec(); // pdd
     };
     /**
-     * 支付宝处理流程
-     */
-    this.alipayProcess = function() {
-        infoFloaty.setProcessText("开始支付宝下单");
-        alipayRechargeProcess.exec(); // pdd
-    };
-    /**
-     * 淘宝处理流程
-     */
-    this.taobaoOrderProcess = function() {
-        infoFloaty.setProcessText("开始淘宝下单");
-        taobaoProcess.exec(); // pdd
-    };
-    /**
      * 重新支付处理流程
      */
     this.rePayProcess = function () {
@@ -489,10 +460,6 @@ function OrderHandler() {
             pddProcess.directPay(); // pdd
             break;
           case "unionPay":
-            break;
-          case "taobao":
-            break;
-          case "alipay":
             break;
           default:
             break;

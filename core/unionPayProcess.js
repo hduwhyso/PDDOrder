@@ -5,7 +5,6 @@
  * @Description:
  */
 let SingleRequire = require('../lib/chase/SingleRequire.js')(runtime, global);
-let {reportSuccess,reportRefund,reportInProgress, stopScript} = require('./submit.js')
 let {apiReportSuccess,apiReportRefund,apiReporInProgress}= require('./APISubmit.js')
 let { debug, logs, error, warn, info} = SingleRequire('LogInfo')
 let { countTodayEntries,clickTextR,textExists,shellOrShizuku } = SingleRequire('Common');
@@ -166,13 +165,9 @@ function UnionPayProcess(){
         try {
             // log("开始上报state");
             infoFloaty.setProcessText("开始报单")
-            if (currentOrder["isSuccessful"] && autoSubmit) {
+            if (currentOrder["isSuccessful"]) {
                 logs("开始上报充值成功的订单")
-                    if(apiOrder){
                         apiReportSuccess('充值成功'); // 上报充值成功的订单
-                    }else{
-                        reportSuccess(); // 上报充值成功的订单
-                    }
                 //TODO 还不知道退款和等待到账的情况
                 // else if (textContains("未发货，退款成功").exists() && textContains("联系商家").exists()) {
                 //     logs("开始上报充值成功的订单")

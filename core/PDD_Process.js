@@ -1,11 +1,9 @@
 /*
  * @Author: hduwhyso 389665028@qq.com
  * @Date: 2024-06-11 20:00:33
- * @LastEditTime: 2025-04-03 08:33:08
+ * @LastEditTime: 2025-07-05 14:14:41
  * @Description:
  */
-
-let {reportSuccess,reportRefund,reportInProgress} = require('./submit.js')
 
 let {apiReportSuccess,apiReportRefund,apiReporInProgress}= require('./APISubmit.js')
 var {queryOrder,orderIDQueryOrder}= SingleRequire('MFSGDAPI');
@@ -545,66 +543,56 @@ function pddProcess(){
         return false; // 如果循环结束仍未成功，返回false
     }
     this.reOpenOrderDetail = function(orderNumber,limit){
-        try{
-            while(limit-- > 0){
-                debug(['MFOrderNumber:{}，orderNumber:{}',currentOrder['MFOrderNumber'],orderNumber])
-                openOrderDetail(orderNumber)
-                sleep(300)
-                if(this.isDual){
-                    if(desc(currentPlatform["entryNow"]).findOne(10000))clickTextR(this.accountButton.desc());
-                }
-                let retryCount=30
-                while(retryCount-->0){
-                    let status = currentStatus.some(function (currentValue) {
-                      return textExists(currentValue);
-                    });
-                    if (status || textExists("精选")) {
-                      if (textExists("查看更多")){
-                        let button= textContains("查看更多").findOne(1000);
-                        if(button)button.click()
-                      }
-                      return;
-                    }
-                      sleep(1000)
-                }
+        try {
+          while (limit-- > 0) {
+            debug(["MFOrderNumber:{}，orderNumber:{}", currentOrder["MFOrderNumber"], orderNumber]);
+            openOrderDetail(orderNumber);
+            sleep(300);
+            if (this.isDual) {
+              if (desc(currentPlatform["entryNow"]).findOne(10000)) clickTextR(this.accountButton.desc());
             }
-            this.stopScript("进入订单详情失败")
-        }catch(e){error(e)}
+            let retryCount = 30;
+            while (retryCount-- > 0) {
+              let status = currentStatus.some(function (currentValue) {
+                return textExists(currentValue);
+              });
+              if (status || textExists("精选")) {
+                if (textExists("查看更多")) {
+                  let button = textContains("查看更多").findOne(1000);
+                  if (button) button.click();
+                }
+                return;
+              }
+              sleep(1000);
+            }
+          }
+          this.stopScript("进入订单详情失败");
+        } catch (e) {
+          error(e);
+        }
     }
     //订单上报
     this.confirmOrderStatus = function(){
         try {
             infoFloaty.setProcessText("开始报单")
             let submitResult=null
-            if (currentOrder["isSuccessful"] && autoSubmit) {
+            if (currentOrder["isSuccessful"]) {
                 if (textContains("充值到账").exists() && textContains("联系商家").exists()) {
-                    currentOrder['orderStatusCode']=1
-                    logs("开始上报充值成功的订单")
-                    if(apiOrder){
-                        submitResult= apiReportSuccess(); // 上报充值成功的订单
-                    }else{
-                        submitResult= reportSuccess(); // 上报充值成功的订单
-                    }
+                  currentOrder["orderStatusCode"] = 1;
+                  logs("开始上报充值成功的订单");
+                  submitResult = apiReportSuccess(); // 上报充值成功的订单
                 } else if (textContains("联系商家").exists() && (textContains("未发货，退款成功").exists() || textContains("申请售后成功，退款中").exists())) {
-                    logs("开始上报退款的订单")
-                    currentOrder['orderStatusCode']=0
-                    if(apiOrder){
-                        submitResult= apiReportRefund(); // 上报退款中的订单
-                    }else{
-                        submitResult= reportRefund(); // 上报退款中的订单
-                    }
+                  logs("开始上报退款的订单");
+                  currentOrder["orderStatusCode"] = 0;
+                  submitResult = apiReportRefund(); // 上报退款中的订单
                 } else if (textContains("等待到账").exists() && textContains("联系商家").exists()) {
-                    currentOrder['orderStatusCode']=2
-                    logs("开始上报等待到账的订单")
-                    if(apiOrder){
-                        submitResult= apiReporInProgress(); // 上报等待到账的订单
-                    }else{
-                        submitResult=  reportInProgress(); // 上报等待到账的订单
-                    }
-                }else{
-                    warn("报单检测异常")
-                    this.waitResult()
-                    return;
+                  currentOrder["orderStatusCode"] = 2;
+                  logs("开始上报等待到账的订单");
+                  submitResult = apiReporInProgress(); // 上报等待到账的订单
+                } else {
+                  warn("报单检测异常");
+                  this.waitResult();
+                  return;
                 }
                 if(!submitResult)this.waitResult();
                 info('上报订单状态成功')
