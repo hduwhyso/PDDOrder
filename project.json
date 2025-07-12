@@ -1,0 +1,10 @@
+{
+    "name": "蜜蜂汇云困鱼版",
+    "main": "showFloaty.js",
+    "ignore": [
+        "build"
+    ],
+    "packageName": "com.processJDOrderForKunyu",
+    "versionName": "1.1.0",
+    "versionCode": 1
+}
