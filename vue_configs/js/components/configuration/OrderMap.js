@@ -1,7 +1,7 @@
 /*
  * @Author: hduwhyso 389665028@qq.com
  * @Date: 2024-07-24 19:40:47
- * @LastEditTime: 2025-07-13 00:38:18
+ * @LastEditTime: 2025-07-13 08:41:02
  * @Description: 优化版订单列表
  */
 const OrderMap = {
@@ -241,6 +241,12 @@ const OrderMap = {
       }
       this.monthOrderStats = stats;
       this.showMonthDetail = true;
+    },
+    goPage(page) {
+      // 分页跳转方法
+      if (page >= 1 && page <= this.pageCount) {
+        this.currentPage = page;
+      }
     },
   },
   mounted() {

@@ -1,25 +1,23 @@
 /*
  * @Author: hduwhyso 389665028@qq.com
  * @Date: 2024-06-11 20:00:33
- * @LastEditTime: 2025-07-11 22:36:45
+ * @LastEditTime: 2025-07-13 12:45:09
  * @Description:
  */
 
 let {apiReportSuccess,apiReportRefund,apiReporInProgress}= require('./APISubmit.js')
-var {queryOrder,orderIDQueryOrder}= SingleRequire('MFSGDAPI');
 let ocrText=null
 if(ocr==="PaddleOcr"){
     ocrText=SingleRequire("PaddleOcr")
 }else if(ocr==="MlkitOcr"){
     ocrText=SingleRequire("MlkitOcr")
 }
-let {openRechargeCenter,openMyOrder,openOrderDetail,openPeddingPayOrder}=SingleRequire("PDD")
+let {openRechargeCenter,openMyOrder,openPeddingPayOrder}=SingleRequire("PDD")
 let { countTodayEntries,clickTextR,textExists,shellOrShizuku } = SingleRequire('Common');
 let alipay=SingleRequire("Alipay")
 let pay_QQ=SingleRequire("Pay_QQ")
 let pay_wechat=SingleRequire("Pay_wechat")
 let pingduoduoPayment=SingleRequire("PingduoduoPayment")
-let currentStatus = ["充值到账", "未发货，退款成功", "支付成功，等待到账", "申请售后成功，退款中"];
 
 
 var init=require('./public/initi.js')
@@ -268,6 +266,8 @@ function pddProcess(){
                 break;
         }
         if(currentOrder["isSuccessful"]){
+            currentOrder["orderStatusCode"] = -1;
+            currentOrder["orderStatus"]="支付成功，等待到账"
             logs("充值成功")
         }else{
             logs("异常，检查是否成功")
@@ -450,7 +450,7 @@ function pddProcess(){
         try {
             //订单列表进入订单详情最多尝试10次
             info('等待结果')
-            if(currentOrder["orderNumber"]){this.reOpenOrderDetail(currentOrder["orderNumber"],10);}
+            if(currentOrder["orderNumber"]){this.enterPaidOrderDetail(currentOrder["orderNumber"],10);}
             else{
                 if(!this.enterOrderDetail(10))this.stopScript("进入我的订单失败")
             }
@@ -480,11 +480,11 @@ function pddProcess(){
                 if(count==2){
                     if(osIngore)shellOrShizuku("am force-stop com.xunmeng.pinduoduo");
                     sleep(3000)
-                    this.reOpenOrderDetail(currentOrder["orderNumber"],10)
+                    this.enterPaidOrderDetail(currentOrder["orderNumber"],10)
                     sleep(3000)
                 }
             }
-            this.reOpenOrderDetail(currentOrder["orderNumber"],10)
+            this.enterPaidOrderDetail(currentOrder["orderNumber"],10)
             //确认页面加载完成
             while(limit-->0){
                 if(textExists("充值到账") || textExists("退款成功"))break;
@@ -543,35 +543,7 @@ function pddProcess(){
         }
         return false; // 如果循环结束仍未成功，返回false
     }
-    this.reOpenOrderDetail = function(orderNumber,limit){
-        try {
-          while (limit-- > 0) {
-            debug(["MFOrderNumber:{}，orderNumber:{}", currentOrder["MFOrderNumber"], orderNumber]);
-            openOrderDetail(orderNumber);
-            sleep(300);
-            if (this.isDual) {
-              if (desc(currentPlatform["entryNow"]).findOne(10000)) clickTextR(this.accountButton.desc());
-            }
-            let retryCount = 30;
-            while (retryCount-- > 0) {
-              let status = currentStatus.some(function (currentValue) {
-                return textExists(currentValue);
-              });
-              if (status || textExists("精选")) {
-                if (textExists("查看更多")) {
-                  let button = textContains("查看更多").findOne(1000);
-                  if (button) button.click();
-                }
-                return;
-              }
-              sleep(1000);
-            }
-          }
-          this.stopScript("进入订单详情失败");
-        } catch (e) {
-          error(e);
-        }
-    }
+
     //订单上报
     this.confirmOrderStatus = function(){
         try {
@@ -587,7 +559,7 @@ function pddProcess(){
                   currentOrder["orderStatusCode"] = 0;
                   submitResult = apiReportRefund(); // 上报退款中的订单
                 } else if (textContains("等待到账").exists() && textContains("联系商家").exists()) {
-                  currentOrder["orderStatusCode"] = 2;
+                  currentOrder["orderStatusCode"] = -1;
                   logs("开始上报等待到账的订单");
                   submitResult = apiReporInProgress(); // 上报等待到账的订单
                 } else {

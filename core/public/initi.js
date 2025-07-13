@@ -1,7 +1,7 @@
 /*
  * @Author: hduwhyso 389665028@qq.com
  * @Date: 2024-06-20 05:10:35
- * @LastEditTime: 2024-09-01 12:52:25
+ * @LastEditTime: 2025-07-13 12:53:03
  * @Description: rechargeAmount
  */
 let SingleRequire = require('../../lib/chase/SingleRequire.js')(runtime, global);
@@ -13,6 +13,45 @@ function init(){
     this.isDual=false;
     this.accountButton="";
     this.rechargeAmount="";//充值金额
+
+    /**
+     * 根据订单号查询订单是否存在
+     * @param {string} orderNumber - 订单号，默认为 currentOrder["MFOrderNumber"]
+     * @returns {Object} - 返回查询结果，包含 code 和 data
+     */
+    this.queryOrderExists = function(orderNumber) {
+        orderNumber = orderNumber || currentOrder["MFOrderNumber"];
+        if (!orderNumber) {
+            logs("订单号为空，无法查询");
+            return null;
+        }
+
+        let limit = 5;
+        while (limit-- > 0) {
+            debug('查询订单号: ' + orderNumber);
+            let res = orderIDQueryOrder(orderNumber);
+
+            if (res) {
+                // code为0表示订单存在，为1表示订单不存在
+                if (res["code"] == 0) {
+                    logs("订单存在: " + orderNumber);
+                    return res;
+                } else if (res["code"] == 1) {
+                    logs("订单不存在: " + orderNumber);
+                    return res;
+                } else {
+                    logs("查询订单返回异常状态: " + res["code"]);
+                }
+            } else {
+                logs("网络异常，重试查询订单");
+            }
+            sleep(1000);
+        }
+
+        logs("查询订单失败，网络异常");
+        return null;
+    };
+
     //运行前检查
     this.prepareForStart = function () {
         this.phoneNumber = currentOrder["phoneNumber"];
@@ -91,6 +130,37 @@ function init(){
         sleep(500);
         controlPanel.hideExceptStop();
         infoFloaty.restore();
+    }
+
+    // 进入已付款订单详情
+    this.enterPaidOrderDetail = function(orderNumber, limit) {
+        try {
+            while (limit-- > 0) {
+                debug(["MFOrderNumber:{}，orderNumber:{}", currentOrder["MFOrderNumber"], orderNumber]);
+                openOrderDetail(orderNumber);
+                sleep(300);
+                if (this.isDual) {
+                    if (desc(currentPlatform["entryNow"]).findOne(10000)) clickTextR(this.accountButton.desc());
+                }
+                let retryCount = 30;
+                while (retryCount-- > 0) {
+                    let status = currentStatus.some(function (currentValue) {
+                        return textExists(currentValue);
+                    });
+                    if (status || textExists("精选")) {
+                        if (textExists("查看更多")) {
+                            let button = textContains("查看更多").findOne(1000);
+                            if (button) button.click();
+                        }
+                        return;
+                    }
+                    sleep(1000);
+                }
+            }
+            this.stopScript("进入订单详情失败");
+        } catch (e) {
+            error(e);
+        }
     }
 }
 
