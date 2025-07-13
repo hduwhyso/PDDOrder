@@ -112,7 +112,7 @@ var OrderUtils = {
             })["vender_name"] || null,
             phoneNumber: orderData.target,
             MFOrderNumber: orderData.user_order_id,
-            detail: orderData.target_desc,
+            detail: orderData.target_desc.replace( /^([^：|]+)：([^|]+)\|([^：|]+)：([^|]+)\|([^：|]+)：(.+)$/,'$2|$4$6'),
             orderNumber: null,
             isSuccessful: false,
             getOrderTs: orderData.create_time ? orderData.create_time * 1000 : new Date().getTime(),
@@ -268,14 +268,15 @@ var OrderManager = {
      * 根据状态码检查订单状态
      */
     checkOrderStatus: function() {
-        var limit = 5;
+        let peddingHandleOrder = [];
+        var limit = 60;
         while (limit-- > 0) {
             var status = 998;/**处理中,包含异常 */
             var res = statusQueryOrder(status);
 
             if (!res) {
                 sleep(1000);
-                continue;
+                continue;//网络异常跳过当前循环，重试
             }
 
             if (res["code"] == 0) {
@@ -285,7 +286,7 @@ var OrderManager = {
                 for (var i = 0; i < res.length; i++) {
                     if (!res[i]["user_order_id"]) {
                         logs(["蜜蜂单号：{}", res[i]["user_order_id"]]);
-                        return true;
+                        return peddingHandleOrder;
                     }
 
                     var order = orderMap.get(res[i]["user_order_id"]);
@@ -297,42 +298,36 @@ var OrderManager = {
                     if (order) {
                         if (!order["isSuccessful"] && !order["orderNumber"]) {
                             if (res[i]["status"] == 5) {
-                                currentOrder = order;
-                                logs("存在未处理订单，优先处理。currentOrder:" + JSON.stringify(currentOrder));
+                                peddingHandleOrder.push(order);
+                                // logs("存在未处理订单，优先处理。currentOrder:" + JSON.stringify(currentOrder));
                             } else if (res[i]["status"] == 7) {
-                                currentOrder = OrderUtils.createOrder(res[i]);
-                                logs("存在异常订单，优先处理。currentOrder:" + JSON.stringify(currentOrder));
+                                peddingHandleOrder.push(OrderUtils.createOrder(res[i]));
+                                // logs("存在异常订单，优先处理。currentOrder:" + JSON.stringify(currentOrder));
                             } else {
-                                logs("没有其他情况了吧");
-                                exit();
+                                OrderUtils.safeExit("checkOrderStatus没有其他情况了吧");
                             }
                             break;
                         } else if (!order["isSuccessful"] && order["orderNumber"]) {
                             logs("存在下单已成功，付款未成功订单，重新下单解决");
-                            currentOrder = OrderUtils.createOrder(res[i]);
+                            peddingHandleOrder.push(OrderUtils.createOrder(res[i]));
                         } else if (order["isSuccessful"] && order["orderNumber"]) {
                             logs(["{}下单已成功，付款已成功订单，不处理", order["MFOrderNumber"]]);
-                            if (res.length - 1 == i) return true;
+                            if (res.length - 1 == i) return peddingHandleOrder;
                         } else {
-                            logs("还有什么情况？");
-                            exit();
+                            OrderUtils.safeExit("checkOrderStatus还有什么情况");
                         }
                     } else {
                         logs("存在已抢到但是未下单未付款订单");
-                        currentOrder = OrderUtils.createOrder(res[i]);
+                        peddingHandleOrder.push(OrderUtils.createOrder(res[i]));
                     }
                 }
-
                 sleep(1000);
-                infoFloaty.setSPNText(currentOrder['phoneNumber']);
-                return false;
+                return peddingHandleOrder;
             } else if (res["code"] == 1) {
-                return true;
+                return peddingHandleOrder;
             }
         }
-
-        log('网络异常，退出');
-        exit();
+        OrderUtils.safeExit("网络异常，退出");
     }
 };
 
@@ -439,6 +434,7 @@ var PlatformProcessor = (function() {
         if (!rechargePlatform) {
           OrderUtils.safeExit("无待付款订单");
         }
+        
         logs("当前充值平台是：" + rechargePlatform);
 
         switch (chosenPlatform) {
@@ -466,19 +462,6 @@ function OrderHandler() {
     init.call(this);
 
     /**
-     * 处理订单的通用函数
-     */
-    this.handleOrder = function(processFunction) {
-        try {
-            this.init();
-            processFunction();
-        } catch (err) {
-            error(err);
-            exit();
-        }
-    };
-
-    /**
      * 初始化检查
      */
     this.init = function() {
@@ -493,61 +476,48 @@ function OrderHandler() {
     };
 
     /**
+     * 处理订单的通用函数
+     */
+    this.handleOrder = function(processFunction) {
+        try {
+            this.init();         // 先做初始化检查
+            processFunction();   // 再执行传入的处理逻辑
+        } catch (err) {
+            error(err);
+            exit();
+        }
+    };
+
+    /**
      * 等待订单处理流程
      */
     this.waitOrderProcess = function() {
         var self = this;
         this.handleOrder(function() {
-            PlatformProcessor.getPlatformID();
+            PlatformProcessor.getPlatformID();/**平台ID，如多多号 */
 
             while (true) {
-                infoFloaty.setWarnText(" ");
-                OrderManager.calculateOrderCount();
-                infoFloaty.setProcessText("订单在路上");
-
-                OrderUtils.launchPaymentApp(currentPayWayDict);
+                OrderUtils.launchPaymentApp(currentPayWayDict);/**打开支付应用 */
 
                 if (chosenPlatform == 'pdd' && osIngore) {
                     openRechargeCenter();
                 }
+                
+                self.checkOrder();
+                infoFloaty.setWarnText(" ");
+                OrderManager.calculateOrderCount();
+                infoFloaty.setProcessText("订单在路上");
 
-                if (self.checkOrder()) {
-                    var res = require('./waitOrderAPI.js').exec();
-                    if (res && res['MFOrderNumber'] && !res['isSuccessful']) {
-                        currentOrder = res;
-                    } else {
-                        infoFloaty.setWarnText("waitOrder未获取到号码");
-                        break;
-                    }
+
+                // 等待订单
+                if (self.waitForOrder()) {
+                    // 处理订单
+                    self.processOrders();
+                } else {
+                    infoFloaty.setWarnText("waitOrder未获取到号码");
+                    break;
                 }
 
-                debug("currentOrder：" + JSON.stringify(currentOrder));
-                threads.start(function() {
-                    alertWithMusic();
-                });
-
-                logs("充值平台是：" + chosenPlatform + ';平台ID：' + appID);
-                currentOrder["rechargeID"] = appID;
-
-                switch (chosenPlatform) {
-                    case "jd":
-                        PlatformProcessor.processJDOrder();
-                        break;
-                    case "pdd":
-                        if (mjwInstalled) {
-                            launch("com.yztc.studio.plugin");
-                            sleep(1000);
-                        }
-                        PlatformProcessor.processPDDOrder();
-                        break;
-                    case "unionPay":
-                        PlatformProcessor.processUnionPayOrder();
-                        break;
-                    default:
-                        break;
-                }
-
-                self.updateData();
                 sleep(1000);
             }
 
@@ -555,13 +525,81 @@ function OrderHandler() {
         });
     };
 
+    /**
+     * 等待订单
+     */
+    this.waitForOrder = function() {
+        var res = require('./waitOrderAPI.js').exec();
+        if (res && res['MFOrderNumber'] && !res['isSuccessful']) {
+            currentOrder = res;
+            return true;
+        }
+        return false;
+    };
 
+    /**
+     * 处理订单
+     */
+    this.processOrders = function() {
+        debug("currentOrder：" + JSON.stringify(currentOrder));
+        threads.start(function() {
+            alertWithMusic();
+        });
+
+        logs("充值平台是：" + chosenPlatform + ';平台ID：' + appID);
+        currentOrder["rechargeID"] = appID;
+
+        switch (chosenPlatform) {
+            case "jd":
+                PlatformProcessor.processJDOrder();
+                break;
+            case "pdd":
+                if (mjwInstalled) {
+                    launch("com.yztc.studio.plugin");
+                    sleep(1000);
+                }
+                PlatformProcessor.processPDDOrder();
+                break;
+            case "unionPay":
+                PlatformProcessor.processUnionPayOrder();
+                break;
+            default:
+                break;
+        }
+
+        this.updateData();
+    };
 
     /**
      * 检查订单
+     * 目前只支持一个设备做单
      */
     this.checkOrder = function() {
-        return OrderManager.checkOrderStatus();
+        let peddingHandleOrder = OrderManager.checkOrderStatus();
+        if(peddingHandleOrder.length > 0){
+            // 循环处理所有待处理订单
+            for (var i = 0; i < peddingHandleOrder.length; i++) {
+                currentOrder = peddingHandleOrder[i];
+                infoFloaty.setSPNText(currentOrder['phoneNumber']);                
+                logs("处理第" + (i + 1) + "个订单：" + currentOrder['MFOrderNumber']);
+                if(!currentOrder['isSuccessful']){
+                    this.handleOrder(function() {
+                        self.processOrders();
+                    });
+                }else if(currentOrder['isSuccessful'] && currentOrder['orderNumber']){
+                    logs(["{}下单已成功，付款已成功订单，不处理", currentOrder["MFOrderNumber"]]);
+
+                }else{
+                    OrderUtils.safeExit("checkOrder还有什么情况");
+                }                
+                // 如果不是最后一个订单，等待一下再处理下一个
+                if (i < peddingHandleOrder.length - 1) {
+                    sleep(2000);
+                }
+            }
+        }else{
+            logs("没有待处理订单");
+        }
     };
 
 

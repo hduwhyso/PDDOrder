@@ -36,6 +36,7 @@ function pddProcess(){
     }
     this.directPay = function(){
         this.prepareForStart()
+        if(!this.orderIDQueryOrder())return;  //如果订单不存在，跳过
         infoFloaty.setProcessText("开始PDD付款");
         if(!this.pay())return;
         infoFloaty.setProcessText("PDD等待结果");
@@ -52,6 +53,7 @@ function pddProcess(){
           //判断有这个订单，还是没有这个订单
           if (res["code"] == 0) {
             res = res["data"][0];
+            /**5 正在充值 7 异常 */
             if (res["status"] == 5 || res["status"] == 7) {
               /** || res['status'] == 7 */
               log(res["status_name"]);
